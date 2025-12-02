@@ -1,0 +1,757 @@
+/* Landing Page Styles */
+
+* {
+  box-sizing: border-box;
+}
+
+.landing-container {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  background: #f5f5f5;
+}
+
+/* Sidebar Styles */
+.sidebar {
+  background: #1a1f2e;
+  width: 240px;
+  height: 100%;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.sidebar-header {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  margin: 16px;
+}
+
+.sidebar-title {
+  font-family: 'Arimo', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  color: white;
+  margin: 0;
+  white-space: pre;
+}
+
+.sidebar-subtitle {
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: #99a1af;
+  margin: 0;
+  white-space: pre;
+}
+
+.sidebar-menu {
+  padding: 0 16px;
+  margin-top: 24px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  padding-left: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: background 0.2s;
+}
+
+.menu-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.menu-item.active {
+  background: #155dfc;
+}
+
+.menu-item-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.menu-item-text {
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  color: #99a1af;
+  white-space: pre;
+}
+
+.menu-item.active .menu-item-text {
+  color: white;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+/* Header Styles */
+.header {
+  background: white;
+  height: 72px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  flex-shrink: 0;
+}
+
+.search-input {
+  height: 42px;
+  width: 350px;
+  border: 1px solid #d1d5dc;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: rgba(10, 10, 10, 0.5);
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.notification-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fb2c36;
+  color: white;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #2b7fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  color: #0a0a0a;
+  margin: 0;
+}
+
+.user-email {
+  font-family: 'Arimo', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  color: #6a7282;
+  margin: 0;
+}
+
+/* Dashboard Content */
+.dashboard-content {
+  flex: 1;
+  padding: 24px;
+  overflow: auto;
+  background: #f9fafb;
+}
+
+.dashboard-header {
+  margin-bottom: 24px;
+}
+
+.dashboard-title {
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 30px;
+  color: #0a0a0a;
+  margin: 0 0 4px 0;
+}
+
+.dashboard-subtitle {
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  color: #4a5565;
+  margin: 0;
+}
+
+/* Summary Cards */
+.summary-cards-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.summary-card {
+  flex: 1;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 21px;
+  min-width: 0;
+}
+
+.summary-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.summary-card-title {
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: #4a5565;
+  margin: 0;
+}
+
+.summary-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.summary-card-icon.blue {
+  background: #2b7fff;
+}
+
+.summary-card-icon.green {
+  background: #00c950;
+}
+
+.summary-card-icon.purple {
+  background: #ad46ff;
+}
+
+.summary-card-icon.red {
+  background: #fb2c36;
+}
+
+.summary-card-value {
+  font-family: 'Arimo', sans-serif;
+  font-weight: 400;
+  font-size: 22.4px;
+  line-height: 33.6px;
+  color: #0a0a0a;
+  margin: 0 0 4px 0;
+}
+
+.summary-card-change {
+  font-family: 'Arimo', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  margin: 0;
+}
+
+.summary-card-change.positive {
+  color: #00c950;
+}
+
+.summary-card-change.negative {
+  color: #fb2c36;
+}
+
+/* Charts Row */
+.charts-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.chart-card {
+  flex: 1;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 21px;
+  height: 334px;
+  position: relative;
+}
+
+.chart-title {
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  color: #0a0a0a;
+  margin: 0 0 16px 0;
+}
+
+.chart-title.large {
+  font-size: 18px;
+  line-height: 27px;
+}
+
+/* Bar Chart */
+.bar-chart-container {
+  position: relative;
+  height: 256px;
+  margin-top: 36px;
+}
+
+.bar-chart-labels {
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  bottom: 0;
+  left: 32px;
+  right: 32px;
+  height: 24px;
+}
+
+.bar-chart-label {
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: #4a5565;
+  text-align: center;
+  width: 70px;
+}
+
+.bar-chart-y-axis {
+  position: absolute;
+  left: 0;
+  top: 20px;
+  bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 21px;
+}
+
+.bar-chart-y-label {
+  font-family: 'Arimo', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  color: #99a1af;
+  text-align: right;
+}
+
+.bar-chart-bars {
+  position: absolute;
+  left: 32px;
+  right: 32px;
+  top: 20px;
+  bottom: 24px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  padding-bottom: 2px;
+}
+
+.bar-chart-bar {
+  flex: 1;
+  background: #fb2c36;
+  border-radius: 4px 4px 0 0;
+  position: relative;      /* 🔹 툴팁 기준 위치 */
+  cursor: pointer;         /* 🔹 마우스 포인터 변경 */
+}
+
+/* 🔹 막대 hover 툴팁 */
+.bar-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translate(-50%, -8px);
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25);
+  padding: 10px 14px;
+  min-width: 140px;
+  z-index: 10;
+}
+
+.bar-tooltip-title {
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #0a0a0a;
+  margin: 0 0 4px 0;
+}
+
+.bar-tooltip-value {
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-size: 13px;
+  line-height: 18px;
+  color: #fb2c36; /* 🔹 빨간 텍스트 */
+  margin: 0;
+}
+
+.bar-chart-grid {
+  position: absolute;
+  left: 32px;
+  right: 32px;
+  top: 20px;
+  bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.bar-chart-grid-line {
+  height: 1px;
+  width: 100%;
+  border-top: 1px solid #d1d5dc;
+}
+
+/* Pie Chart */
+.pie-chart-container {
+  position: relative;
+  height: 240px;
+  margin-top: 39px;
+}
+
+.pie-chart-svg {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.pie-chart-legend {
+  position: absolute;
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+/* 위쪽, 원 바로 위 (카드: 65%) */
+.pie-chart-legend.blue {
+  color: #3b82f6;
+  top: 10px;          /* 컨테이너 상단에서 조금만 떨어지게 */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* 아래쪽, 원 바로 아래 중앙 (현금: 20%) */
+.pie-chart-legend.green {
+  color: #22c55e;
+  bottom: 8px;        /* 컨테이너 하단과 가깝게 */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* 오른쪽, 원의 가운데 높이 근처 (계좌이체: 15%) */
+.pie-chart-legend.amber {
+  color: #f59e0b;
+  top: 50%;
+  left: calc(50% + 120px);  /* 원 오른쪽에 바짝 붙도록 */
+  transform: translateY(-50%);
+}
+
+/* hover 상태는 그대로 유지 */
+.pie-chart-legend-active {
+  background-color: #eef2ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+}
+
+/* Line Chart */
+.line-chart-full {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 21px;
+  margin-bottom: 24px;
+}
+
+.line-chart-container {
+  position: relative;
+  height: 310px;
+  margin-top: 12px;
+}
+
+.line-chart-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.line-chart-legend-text {
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: #2b7fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Notice Card */
+.notice-card {
+  flex: 1;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 21px;
+  height: 516px;
+}
+
+.notice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.notice-item {
+  padding: 16px 16px 0 20px;
+  border-radius: 10px;
+  height: 80px;
+  position: relative;
+}
+
+.notice-item.red {
+  background: #fef2f2;
+  border-left: 4px solid #fb2c36;
+}
+
+.notice-item.yellow {
+  background: #fefce8;
+  border-left: 4px solid #f0b100;
+}
+
+.notice-item.blue {
+  background: #eff6ff;
+  border-left: 4px solid #2b7fff;
+}
+
+.notice-item-title {
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  color: #0a0a0a;
+  margin: 0 0 4px 0;
+}
+
+.notice-item-description {
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: #4a5565;
+  margin: 0;
+}
+
+/* Bottom Row */
+.bottom-row {
+  display: flex;
+  gap: 16px;
+}
+
+/* Star Rating */
+.star-rating-card {
+  flex: 1;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 21px;
+  height: 516px;
+}
+
+.rating-display {
+  text-align: center;
+  margin-top: 80px;
+}
+
+.rating-value {
+  font-family: 'Arimo', sans-serif;
+  font-weight: 400;
+  font-size: 64px;
+  line-height: 96px;
+  color: #0a0a0a;
+  margin: 0;
+}
+
+.rating-stars {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.rating-star {
+  width: 32px;
+  height: 32px;
+}
+
+.rating-subtitle {
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: #6a7282;
+  margin: 16px 0 0 0;
+}
+
+.rating-change {
+  font-family: 'Arimo', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: #00c950;
+  margin: 8px 0 0 0;
+}
+
+.rating-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.rating-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 10px;
+}
+
+.rating-item-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e0f2fe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rating-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.rating-item-name {
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  color: #0a0a0a;
+  margin: 0 0 2px 0;
+}
+
+.rating-item-reviews {
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  color: #2b7fff;
+  margin: 0;
+}
+
+.rating-item-score {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.rating-item-star {
+  width: 20px;
+  height: 20px;
+  color: #ffc107;
+}
+
+.rating-item-number {
+  font-family: 'Arimo', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  color: #0a0a0a;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .charts-row {
+    flex-direction: column;
+  }
+  
+  .bottom-row {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 200px;
+  }
+  
+  .summary-cards-row {
+    flex-wrap: wrap;
+  }
+  
+  .summary-card {
+    min-width: calc(50% - 8px);
+  }
+}
