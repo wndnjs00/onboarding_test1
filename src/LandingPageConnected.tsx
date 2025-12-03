@@ -1,24 +1,212 @@
 import React from "react";
 import svgPaths from "./imports/svg-hkox9tdlbo";
 import "./styles/landingPage.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "./lib/supabaseClient";
 
-export default function LandingPage() {
+export default function LandingPageConnected() {
   const [activePayment, setActivePayment] = useState<string | null>(null);
-  const [hoveredBranch, setHoveredBranch] = useState<number | null>(null); // 🔹 추가
-  const [hoveredMonth, setHoveredMonth] = useState<number | null>(null); // 🔹 추가
+  const [hoveredBranch, setHoveredBranch] = useState<number | null>(null);
+  const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
 
-  // 🔹 지점별 불량률 데이터 (percent만 입력하면 자동으로 높이 계산)
-  const branchBars = [
-    { name: "강남점", percent: 28.5 },
+  // --- Mock data (fallbacks) ---
+  const MOCK_BRANCH_BARS = [
+    { name: "강남점", percent: 40.5 },
     { name: "신촌점", percent: 50.2 },
     { name: "부산중앙점", percent: 8.1 },
     { name: "대구점", percent: 7.3 },
-    { name: "인천점", percent: 6.8 },
+    { name: "인천점", percent: 80.8 },
   ];
 
+  const MOCK_PAYMENT_DATA = [
+    { name: "카드", percent: 65, color: "#3B82F6", type: "card" },
+    { name: "현금", percent: 20, color: "#22C55E", type: "cash" },
+    { name: "계좌이체", percent: 15, color: "#F59E0B", type: "transfer" },
+  ];
+
+  const MOCK_MONTHLY_SALES = [
+    { month: "7월", sales: 6500000 },
+    { month: "8월", sales: 2800000 },
+    { month: "9월", sales: 2400000 },
+    { month: "10월", sales: 3200000 },
+    { month: "11월", sales: 3900000 },
+    { month: "12월", sales: 3700000 },
+  ];
+
+  const MOCK_SUMMARY = {
+    total_stores: 248,
+    todays_installations: 89,
+    todays_revenue: 12450000,
+    unpaid_notifications: 7,
+  };
+
+  const MOCK_NOTICES = [
+    { title: 'POS 미입력', description: '강남점 - 시공번호 #2024120201 미입력 (2시간 경과)', severity: 'red' },
+    { title: '불량률 초과', description: '부산중앙점 - 이번 달 불량률 12.5% (기준 5%)', severity: 'red' },
+    { title: 'POS 미입력', description: '대구점 - 시공번호 #2024120205 미입력 (3시간 경과)', severity: 'red' },
+  ];
+
+  const MOCK_RATINGS = [
+    { branch_name: '강남점', reviews_count: 124, rating: 4.8 },
+    { branch_name: '신촌점', reviews_count: 98, rating: 4.6 },
+    { branch_name: '부산중앙점', reviews_count: 87, rating: 4.2 },
+    { branch_name: '대구점', reviews_count: 156, rating: 4.9 },
+    { branch_name: '인천점', reviews_count: 112, rating: 4.7 },
+  ];
+
+  // --- Supabase-backed state ---
+  const [summary, setSummary] = useState<any | null>(null);
+  const [branches, setBranches] = useState<Array<any>>([]);
+  const [payments, setPayments] = useState<Array<any>>([]);
+  const [monthlySalesState, setMonthlySalesState] = useState<Array<any>>([]);
+  const [notices, setNotices] = useState<Array<any>>([]);
+  const [ratings, setRatings] = useState<Array<any>>([]);
+  const [loadingData, setLoadingData] = useState(false);
+  const [dataError, setDataError] = useState<string | null>(null);
+
+  // Load function
+  async function load() {
+    setLoadingData(true);
+    try {
+      console.log('📡 Starting Supabase data load...');
+
+      // dashboard_summary: 첫 번째 레코드 가져오기 (single 제거)
+      const { data: summaryData, error: sErr } = await supabase.from('dashboard_summary').select('*').limit(1);
+      if (sErr) {
+        console.error('❌ dashboard_summary error:', sErr);
+      } else {
+        console.log('✅ dashboard_summary loaded:', summaryData?.length, 'records');
+        if (summaryData && summaryData.length > 0) setSummary(summaryData[0]);
+      }
+
+      const { data: branchData, error: bErr } = await supabase.from('branch_rates').select('*').order('percent', { ascending: false }).limit(5);
+      if (bErr) {
+        console.error('❌ branch_rates error:', bErr);
+      } else {
+        console.log('✅ branch_rates loaded:', branchData?.length, 'records');
+        if (branchData && branchData.length) setBranches(branchData as any[]);
+      }
+
+      const { data: paymentData, error: pErr } = await supabase.from('payment_shares').select('*');
+      if (pErr) {
+        console.error('❌ payment_shares error:', pErr);
+      } else {
+        console.log('✅ payment_shares loaded:', paymentData?.length, 'records');
+        if (paymentData && paymentData.length) setPayments(paymentData as any[]);
+      }
+
+      const { data: monthlyData, error: mErr } = await supabase.from('monthly_sales').select('*').order('month_index', { ascending: true });
+      if (mErr) {
+        console.error('❌ monthly_sales error:', mErr);
+      } else {
+        console.log('✅ monthly_sales loaded:', monthlyData?.length, 'records');
+        if (monthlyData && monthlyData.length) setMonthlySalesState(monthlyData as any[]);
+      }
+
+      const { data: noticeData, error: nErr } = await supabase.from('dashboard_notices').select('*').order('created_at', { ascending: false }).limit(10);
+      if (nErr) {
+        console.error('❌ dashboard_notices error:', nErr);
+      } else {
+        console.log('✅ dashboard_notices loaded:', noticeData?.length, 'records');
+        if (noticeData && noticeData.length) setNotices(noticeData as any[]);
+      }
+
+      const { data: ratingData, error: rErr } = await supabase.from('branch_ratings').select('*').order('rating', { ascending: false }).limit(10);
+      if (rErr) {
+        console.error('❌ branch_ratings error:', rErr);
+      } else {
+        console.log('✅ branch_ratings loaded:', ratingData?.length, 'records');
+        if (ratingData && ratingData.length) setRatings(ratingData as any[]);
+      }
+
+      console.log('📡 Supabase data load complete!');
+    } catch (err: any) {
+      console.error('❌ Critical error loading data:', err);
+      setDataError(err.message || String(err));
+    } finally {
+      setLoadingData(false);
+    }
+  }
+
+  useEffect(() => {
+    load();
+
+    // 🔹 Realtime subscription: Listen for changes in all tables
+    console.log('🔌 Setting up Realtime subscriptions...');
+
+    const branchSubscription = supabase
+      .channel('branch_rates_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'branch_rates' }, (payload: any) => {
+        console.log('🔄 branch_rates changed:', payload.eventType, payload);
+        load();
+      })
+      .subscribe((status: string) => {
+        console.log('📡 branch_rates subscription status:', status);
+      });
+
+    const paymentSubscription = supabase
+      .channel('payment_shares_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'payment_shares' }, (payload: any) => {
+        console.log('🔄 payment_shares changed:', payload.eventType, payload);
+        load();
+      })
+      .subscribe((status: string) => {
+        console.log('📡 payment_shares subscription status:', status);
+      });
+
+    const monthlySubscription = supabase
+      .channel('monthly_sales_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'monthly_sales' }, (payload: any) => {
+        console.log('🔄 monthly_sales changed:', payload.eventType, payload);
+        load();
+      })
+      .subscribe((status: string) => {
+        console.log('📡 monthly_sales subscription status:', status);
+      });
+
+    const summarySubscription = supabase
+      .channel('dashboard_summary_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'dashboard_summary' }, (payload: any) => {
+        console.log('🔄 dashboard_summary changed:', payload.eventType, payload);
+        load();
+      })
+      .subscribe((status: string) => {
+        console.log('📡 dashboard_summary subscription status:', status);
+      });
+
+    const noticeSubscription = supabase
+      .channel('dashboard_notices_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'dashboard_notices' }, (payload: any) => {
+        console.log('🔄 dashboard_notices changed:', payload.eventType, payload);
+        load();
+      })
+      .subscribe((status: string) => {
+        console.log('📡 dashboard_notices subscription status:', status);
+      });
+
+    const ratingSubscription = supabase
+      .channel('branch_ratings_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'branch_ratings' }, (payload: any) => {
+        console.log('🔄 branch_ratings changed:', payload.eventType, payload);
+        load();
+      })
+      .subscribe((status: string) => {
+        console.log('📡 branch_ratings subscription status:', status);
+      });
+
+    return () => {
+      console.log('🔌 Cleaning up Realtime subscriptions...');
+      branchSubscription.unsubscribe();
+      paymentSubscription.unsubscribe();
+      monthlySubscription.unsubscribe();
+      summarySubscription.unsubscribe();
+      noticeSubscription.unsubscribe();
+      ratingSubscription.unsubscribe();
+    };
+  }, []);
+
   // 🔹 막대 그래프 계산 함수
-  const calculateBarChart = (data: typeof branchBars) => {
+  const calculateBarChart = (data: typeof MOCK_BRANCH_BARS) => {
     const maxPercent = Math.max(...data.map(d => d.percent));
     const maxHeight = 135; // 최대 막대 높이 (px)
     const chartHeight = 256; // 차트 전체 높이
@@ -39,17 +227,11 @@ export default function LandingPage() {
     };
   };
 
-  const barChartData = calculateBarChart(branchBars);
-
-  // 🔹 결제 방식별 데이터 (동적으로 변경 가능)
-  const paymentData = [
-    { name: "카드", percent:65, color: "#3B82F6", type: "card" },
-    { name: "현금", percent: 20, color: "#22C55E", type: "cash" },
-    { name: "계좌이체", percent: 15, color: "#F59E0B", type: "transfer" },
-  ];
+  const branchBarsToUse = branches.length ? branches.map(b => ({ name: b.name, percent: Number(b.percent) })) : MOCK_BRANCH_BARS;
+  const barChartData = calculateBarChart(branchBarsToUse);
 
   // 🔹 파이 차트 경로 생성 함수
-  const generatePiePath = (data: typeof paymentData) => {
+  const generatePiePath = (data: typeof MOCK_PAYMENT_DATA) => {
     const centerX = 80;
     const centerY = 80;
     const radius = 80;
@@ -106,17 +288,8 @@ export default function LandingPage() {
     });
   };
 
-  const piePaths = generatePiePath(paymentData);
-
-  // 🔹 월 매출 데이터 (sales 값만 입력하면 자동으로 좌표 계산)
-  const monthlySales = [
-    { month: "7월", sales: 6500000 },
-    { month: "8월", sales: 2800000 },
-    { month: "9월", sales: 2400000 },
-    { month: "10월", sales: 3200000 },
-    { month: "11월", sales: 3900000 },
-    { month: "12월", sales: 3700000 },
-  ];
+  const paymentDataToUse = payments.length ? payments.map((p: any) => ({ name: p.name, percent: Number(p.percent), color: p.color || '#DDD', type: p.type || String(p.id) })) : MOCK_PAYMENT_DATA;
+  const piePaths = generatePiePath(paymentDataToUse);
 
   // 🔹 금액 포맷팅 함수 (천 단위 구분자 사용)
   const formatCurrency = (amount: number): string => {
@@ -124,7 +297,7 @@ export default function LandingPage() {
   };
 
   // 🔹 선 그래프 계산 함수
-  const calculateLineChart = (data: typeof monthlySales) => {
+  const calculateLineChart = (data: typeof MOCK_MONTHLY_SALES) => {
     const salesValues = data.map(d => d.sales);
     const minSales = Math.min(...salesValues);
     const maxSales = Math.max(...salesValues);
@@ -183,7 +356,13 @@ export default function LandingPage() {
     };
   };
 
-  const lineChartData = calculateLineChart(monthlySales);
+  const monthlySalesToUse = monthlySalesState.length ? monthlySalesState.map((m: any) => ({ month: m.month_label ?? m.month, sales: Number(m.sales) })) : MOCK_MONTHLY_SALES;
+  const lineChartData = calculateLineChart(monthlySalesToUse);
+
+  // helpers for rendering fallback or live data
+  const summaryToUse = summary ?? MOCK_SUMMARY;
+  const noticesToUse = notices.length ? notices : MOCK_NOTICES;
+  const ratingsToUse = ratings.length ? ratings : MOCK_RATINGS;
 
   return (
     <div className="landing-container">
@@ -267,7 +446,7 @@ export default function LandingPage() {
           </div>
           
           <div className="menu-item">
-            < div className="menu-item-icon">
+            <div className="menu-item-icon">
               <svg fill="none" viewBox="0 0 20 20">
                 <g clipPath="url(#clip0_1_390)">
                   <path d={svgPaths.p14d24500} stroke="#99A1AF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
@@ -358,7 +537,7 @@ export default function LandingPage() {
                   </svg>
                 </div>
               </div>
-              <p className="summary-card-value">247</p>
+              <p className="summary-card-value">{summaryToUse.total_stores}</p>
               <p className="summary-card-change positive">↗ +12</p>
             </div>
 
@@ -374,7 +553,7 @@ export default function LandingPage() {
                   </svg>
                 </div>
               </div>
-              <p className="summary-card-value">89</p>
+              <p className="summary-card-value">{summaryToUse.todays_installations}</p>
               <p className="summary-card-change positive">↗ +23</p>
             </div>
 
@@ -390,7 +569,7 @@ export default function LandingPage() {
                   </svg>
                 </div>
               </div>
-              <p className="summary-card-value">₩12,450,000</p>
+              <p className="summary-card-value">{formatCurrency(summaryToUse.todays_revenue)}</p>
               <p className="summary-card-change positive">↗ +8.5%</p>
             </div>
 
@@ -412,7 +591,7 @@ export default function LandingPage() {
                   </svg>
                 </div>
               </div>
-              <p className="summary-card-value">7</p>
+              <p className="summary-card-value">{summaryToUse.unpaid_notifications}</p>
               <p className="summary-card-change negative">⊙ 즉시 확인 필요</p>
             </div>
           </div>
@@ -475,10 +654,10 @@ export default function LandingPage() {
                     <g>
                       {piePaths.map((item, index) => (
                         <path
-                          key={item.type}
+                          key={item.type || index}
                           d={item.path}
                           fill={item.color}
-                          onMouseEnter={() => setActivePayment(item.type)}
+                          onMouseEnter={() => setActivePayment(item.type as string)}
                           onMouseLeave={() => setActivePayment(null)}
                           style={{ cursor: "pointer" }}
                         />
@@ -496,7 +675,7 @@ export default function LandingPage() {
                   // 컨테이너 중심(50%, 50%)을 기준으로 오프셋 적용
                   return (
                     <div
-                      key={item.type}
+                      key={item.type || item.name}
                       className={
                         `pie-chart-legend ${legendClass} pie-chart-legend-${item.labelPosition}` +
                         (activePayment === item.type ? " pie-chart-legend-active" : "")
@@ -656,21 +835,12 @@ export default function LandingPage() {
                 </button>
               </div>
               <div className="notice-list">
-                <div className="notice-item red">
-                  <h4 className="notice-item-title">POS 미입력</h4>
-                  <p className="notice-item-description">강남점 - 시공번호 #2024120201 미입력 (2시간 경과)</p>
-                </div>
-                
-                <div className="notice-item red">
-                  <h4 className="notice-item-title">불량률 초과</h4>
-                  <p className="notice-item-description">부산중앙점 - 이번 달 불량률 12.5% (기준 5%)</p>
-                </div>
-
-                <div className="notice-item red">
-                  <h4 className="notice-item-title">POS 미입력</h4>
-                  <p className="notice-item-description">대구점 - 시공번호 #2024120205 미입력 (3시간 경과)</p>
-                </div>
-                
+                {noticesToUse.map((n: any, idx: number) => (
+                  <div key={idx} className="notice-item red">
+                    <h4 className="notice-item-title">{n.title}</h4>
+                    <p className="notice-item-description">{n.description}</p>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -687,120 +857,30 @@ export default function LandingPage() {
                 </button>
               </div>
               <div className="rating-list">
-                <div className="rating-item">
-                  <div className="rating-item-icon">
-                    <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
-                      <g>
-                        <path d={svgPaths.p2fedb580} stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        <path d="M10 18.3333V10" stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        <path d={svgPaths.p2eca8c80} stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        <path d="M6.25 3.55834L13.75 7.85" stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                      </g>
-                    </svg>
+                {ratingsToUse.map((r: any, idx: number) => (
+                  <div key={idx} className="rating-item">
+                    <div className="rating-item-icon">
+                      <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+                        <g>
+                          <path d={svgPaths.p2fedb580} stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                          <path d="M10 18.3333V10" stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                          <path d={svgPaths.p2eca8c80} stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                          <path d="M6.25 3.55834L13.75 7.85" stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                        </g>
+                      </svg>
+                    </div>
+                    <div className="rating-item-info">
+                      <h4 className="rating-item-name">{r.branch_name}</h4>
+                      <p className="rating-item-reviews">{r.reviews_count}개 리뷰</p>
+                    </div>
+                    <div className="rating-item-score">
+                      <svg className="rating-item-star" width="20" height="20" fill="none" viewBox="0 0 20 20">
+                        <path d={svgPaths.p2c876580} fill="#FFC107" stroke="#FFC107" strokeWidth="0.5" />
+                      </svg>
+                      <p className="rating-item-number">{r.rating}</p>
+                    </div>
                   </div>
-                  <div className="rating-item-info">
-                    <h4 className="rating-item-name">강남점</h4>
-                    <p className="rating-item-reviews">124개 리뷰</p>
-                  </div>
-                  <div className="rating-item-score">
-                    <svg className="rating-item-star" width="20" height="20" fill="none" viewBox="0 0 20 20">
-                      <path d={svgPaths.p2c876580} fill="#FFC107" stroke="#FFC107" strokeWidth="0.5" />
-                    </svg>
-                    <p className="rating-item-number">4.8</p>
-                  </div>
-                </div>
-
-                <div className="rating-item">
-                  <div className="rating-item-icon">
-                    <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
-                      <g>
-                        <path d={svgPaths.p2fedb580} stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        <path d="M10 18.3333V10" stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        <path d={svgPaths.p2eca8c80} stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        <path d="M6.25 3.55834L13.75 7.85" stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                      </g>
-                    </svg>
-                  </div>
-                  <div className="rating-item-info">
-                    <h4 className="rating-item-name">신촌점</h4>
-                    <p className="rating-item-reviews">98개 리뷰</p>
-                  </div>
-                  <div className="rating-item-score">
-                    <svg className="rating-item-star" width="20" height="20" fill="none" viewBox="0 0 20 20">
-                      <path d={svgPaths.p2c876580} fill="#FFC107" stroke="#FFC107" strokeWidth="0.5" />
-                    </svg>
-                    <p className="rating-item-number">4.6</p>
-                  </div>
-                </div>
-
-                <div className="rating-item">
-                  <div className="rating-item-icon">
-                    <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
-                      <g>
-                        <path d={svgPaths.p2fedb580} stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        <path d="M10 18.3333V10" stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        <path d={svgPaths.p2eca8c80} stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        <path d="M6.25 3.55834L13.75 7.85" stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                      </g>
-                    </svg>
-                  </div>
-                  <div className="rating-item-info">
-                    <h4 className="rating-item-name">부산중앙점</h4>
-                    <p className="rating-item-reviews">87개 리뷰</p>
-                  </div>
-                  <div className="rating-item-score">
-                    <svg className="rating-item-star" width="20" height="20" fill="none" viewBox="0 0 20 20">
-                      <path d={svgPaths.p2c876580} fill="#FFC107" stroke="#FFC107" strokeWidth="0.5" />
-                    </svg>
-                    <p className="rating-item-number">4.2</p>
-                  </div>
-                </div>
-
-                <div className="rating-item">
-                  <div className="rating-item-icon">
-                    <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
-                      <g>
-                        <path d={svgPaths.p2fedb580} stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        <path d="M10 18.3333V10" stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        <path d={svgPaths.p2eca8c80} stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        <path d="M6.25 3.55834L13.75 7.85" stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                      </g>
-                    </svg>
-                  </div>
-                  <div className="rating-item-info">
-                    <h4 className="rating-item-name">대구점</h4>
-                    <p className="rating-item-reviews">156개 리뷰</p>
-                  </div>
-                  <div className="rating-item-score">
-                    <svg className="rating-item-star" width="20" height="20" fill="none" viewBox="0 0 20 20">
-                      <path d={svgPaths.p2c876580} fill="#FFC107" stroke="#FFC107" strokeWidth="0.5" />
-                    </svg>
-                    <p className="rating-item-number">4.9</p>
-                  </div>
-                </div>
-
-                <div className="rating-item">
-                  <div className="rating-item-icon">
-                    <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
-                      <g>
-                        <path d={svgPaths.p2fedb580} stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        <path d="M10 18.3333V10" stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        <path d={svgPaths.p2eca8c80} stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        <path d="M6.25 3.55834L13.75 7.85" stroke="#2B7FFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                      </g>
-                    </svg>
-                  </div>
-                  <div className="rating-item-info">
-                    <h4 className="rating-item-name">인천점</h4>
-                    <p className="rating-item-reviews">112개 리뷰</p>
-                  </div>
-                  <div className="rating-item-score">
-                    <svg className="rating-item-star" width="20" height="20" fill="none" viewBox="0 0 20 20">
-                      <path d={svgPaths.p2c876580} fill="#FFC107" stroke="#FFC107" strokeWidth="0.5" />
-                    </svg>
-                    <p className="rating-item-number">4.7</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
