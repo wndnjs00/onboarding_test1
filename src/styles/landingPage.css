@@ -475,36 +475,27 @@
   border-radius: 8px;
   background-color: rgba(255, 255, 255, 0);
   transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
-/* 위쪽, 원 바로 위 (카드: 65%) */
+/* 색상 설정 */
 .pie-chart-legend.blue {
   color: #3b82f6;
-  top: 10px;          /* 컨테이너 상단에서 조금만 떨어지게 */
-  left: 50%;
-  transform: translateX(-50%);
 }
 
-/* 아래쪽, 원 바로 아래 중앙 (현금: 20%) */
 .pie-chart-legend.green {
   color: #22c55e;
-  bottom: 8px;        /* 컨테이너 하단과 가깝게 */
-  left: 50%;
-  transform: translateX(-50%);
 }
 
-/* 오른쪽, 원의 가운데 높이 근처 (계좌이체: 15%) */
 .pie-chart-legend.amber {
   color: #f59e0b;
-  top: 50%;
-  left: calc(50% + 120px);  /* 원 오른쪽에 바짝 붙도록 */
-  transform: translateY(-50%);
 }
 
-/* hover 상태는 그대로 유지 */
+/* hover 상태 */
 .pie-chart-legend-active {
   background-color: #eef2ff;
-  transform: translateY(-2px);
+  transform: translate(-50%, -52%) !important;
   box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
 }
 
@@ -550,6 +541,37 @@
   border-radius: 10px;
   padding: 21px;
   height: 516px;
+}
+
+.notice-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.notice-view-all {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: 'Arimo', 'Noto Sans KR', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: #2b7fff;
+  transition: opacity 0.2s;
+}
+
+.notice-view-all:hover {
+  opacity: 0.8;
+}
+
+.notice-view-all span {
+  color: #2b7fff;
 }
 
 .notice-list {

@@ -8,24 +8,182 @@ export default function LandingPage() {
   const [hoveredBranch, setHoveredBranch] = useState<number | null>(null); // 🔹 추가
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null); // 🔹 추가
 
-  // 🔹 지점별 불량률 데이터 (퍼센트 + 막대 높이)
+  // 🔹 지점별 불량률 데이터 (percent만 입력하면 자동으로 높이 계산)
   const branchBars = [
-    { name: "강남점", percent: 12.5, height: 135 },      // 가장 높음
-    { name: "신촌점", percent: 10.2, height: 112.5 },
-    { name: "부산중앙점", percent: 8.1, height: 93.375 },
-    { name: "대구점", percent: 7.3, height: 78.75 },
-    { name: "인천점", percent: 6.8, height: 78.75 },
+    { name: "강남점", percent: 28.5 },
+    { name: "신촌점", percent: 50.2 },
+    { name: "부산중앙점", percent: 8.1 },
+    { name: "대구점", percent: 7.3 },
+    { name: "인천점", percent: 6.8 },
   ];
 
-  // 🔹 월 매출 데이터 (툴팁용)
-  const linePoints = [
-    { month: "7월",  x: 103,  y: 125.86, sales: "₩2,500,000" },
-    { month: "8월",  x: 336,  y: 116.86, sales: "₩2,800,000" },
-    { month: "9월",  x: 569,  y: 130.36, sales: "₩2,400,000" },
-    { month: "10월", x: 802,  y: 94.86,  sales: "₩3,200,000" },
-    { month: "11월", x: 1035, y: 64.36,  sales: "₩3,900,000" },
-    { month: "12월", x: 1268, y: 73.36,  sales: "₩3,700,000" },
+  // 🔹 막대 그래프 계산 함수
+  const calculateBarChart = (data: typeof branchBars) => {
+    const maxPercent = Math.max(...data.map(d => d.percent));
+    const maxHeight = 135; // 최대 막대 높이 (px)
+    const chartHeight = 256; // 차트 전체 높이
+    const chartTop = 20; // 차트 상단 여백
+    const chartBottom = 24; // 차트 하단 여백
+    const availableHeight = chartHeight - chartTop - chartBottom;
+    
+    // Y축 레이블 생성 (0부터 최대값까지 5단계)
+    const yAxisMax = Math.ceil(maxPercent / 4) * 4; // 4의 배수로 올림
+    const yAxisLabels = [yAxisMax, yAxisMax * 0.75, yAxisMax * 0.5, yAxisMax * 0.25, 0];
+    
+    return {
+      bars: data.map(item => ({
+        ...item,
+        height: (item.percent / yAxisMax) * availableHeight,
+      })),
+      yAxisLabels,
+    };
+  };
+
+  const barChartData = calculateBarChart(branchBars);
+
+  // 🔹 결제 방식별 데이터 (동적으로 변경 가능)
+  const paymentData = [
+    { name: "카드", percent:65, color: "#3B82F6", type: "card" },
+    { name: "현금", percent: 20, color: "#22C55E", type: "cash" },
+    { name: "계좌이체", percent: 15, color: "#F59E0B", type: "transfer" },
   ];
+
+  // 🔹 파이 차트 경로 생성 함수
+  const generatePiePath = (data: typeof paymentData) => {
+    const centerX = 80;
+    const centerY = 80;
+    const radius = 80;
+    const labelRadius = 115; // 레이블이 원 밖에 위치하도록 하는 반지름 (모든 레이블 동일한 거리)
+    let currentAngle = -90; // 시작 각도 (12시 방향)
+    
+    return data.map((item) => {
+      const angle = (item.percent / 100) * 360;
+      const startAngle = currentAngle;
+      const endAngle = currentAngle + angle;
+      const centerAngle = currentAngle + angle / 2; // 세그먼트의 중심 각도
+      
+      const startAngleRad = (startAngle * Math.PI) / 180;
+      const endAngleRad = (endAngle * Math.PI) / 180;
+      const centerAngleRad = (centerAngle * Math.PI) / 180;
+      
+      const x1 = centerX + radius * Math.cos(startAngleRad);
+      const y1 = centerY + radius * Math.sin(startAngleRad);
+      const x2 = centerX + radius * Math.cos(endAngleRad);
+      const y2 = centerY + radius * Math.sin(endAngleRad);
+      
+      const largeArcFlag = angle > 180 ? 1 : 0;
+      
+      const path = `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+      
+      // 레이블 위치 클래스 결정 (각도에 따라)
+      let labelPosition = '';
+      if (centerAngle >= -45 && centerAngle < 45) {
+        labelPosition = 'right'; // 오른쪽 (카드)
+      } else if (centerAngle >= 45 && centerAngle < 135) {
+        labelPosition = 'bottom'; // 아래쪽
+      } else if (centerAngle >= 135 && centerAngle < 225) {
+        labelPosition = 'left'; // 왼쪽 (현금)
+      } else {
+        labelPosition = 'top'; // 위쪽 (계좌이체)
+      }
+      
+      // 레이블 위치 계산 (세그먼트 중심에서 바깥쪽으로)
+      // 계좌이체는 차트에 더 가깝게 배치
+      const adjustedLabelRadius = labelPosition === 'top' ? 95 : labelRadius;
+      const labelOffsetX = adjustedLabelRadius * Math.cos(centerAngleRad);
+      const labelOffsetY = adjustedLabelRadius * Math.sin(centerAngleRad);
+      
+      currentAngle += angle;
+      
+      return {
+        ...item,
+        path,
+        labelOffsetX,
+        labelOffsetY,
+        labelPosition,
+        centerAngle,
+      };
+    });
+  };
+
+  const piePaths = generatePiePath(paymentData);
+
+  // 🔹 월 매출 데이터 (sales 값만 입력하면 자동으로 좌표 계산)
+  const monthlySales = [
+    { month: "7월", sales: 6500000 },
+    { month: "8월", sales: 2800000 },
+    { month: "9월", sales: 2400000 },
+    { month: "10월", sales: 3200000 },
+    { month: "11월", sales: 3900000 },
+    { month: "12월", sales: 3700000 },
+  ];
+
+  // 🔹 금액 포맷팅 함수 (천 단위 구분자 사용)
+  const formatCurrency = (amount: number): string => {
+    return `₩${amount.toLocaleString('ko-KR')}`;
+  };
+
+  // 🔹 선 그래프 계산 함수
+  const calculateLineChart = (data: typeof monthlySales) => {
+    const salesValues = data.map(d => d.sales);
+    const minSales = Math.min(...salesValues);
+    const maxSales = Math.max(...salesValues);
+    
+    // 차트 영역 설정
+    const chartWidth = 1294;
+    const chartHeight = 310;
+    const paddingLeft = 103;
+    const paddingRight = 26;
+    const paddingTop = 25.86;
+    const paddingBottom = 64.14;
+    const graphWidth = chartWidth - paddingLeft - paddingRight;
+    const graphHeight = chartHeight - paddingTop - paddingBottom;
+    
+    // X 좌표 계산 (균등 분배)
+    const pointCount = data.length;
+    const xSpacing = graphWidth / (pointCount - 1);
+    
+    // Y 좌표 계산 (매출 값에 비례)
+    const salesRange = maxSales - minSales;
+    const yAxisMax = Math.ceil(maxSales / 1000000) * 1000000; // 100만 단위로 올림
+    const yAxisMin = Math.floor(minSales / 1000000) * 1000000; // 100만 단위로 내림
+    const yRange = yAxisMax - yAxisMin;
+    
+    const points = data.map((item, index) => {
+      const x = paddingLeft + index * xSpacing;
+      // Y는 위에서 아래로 증가 (SVG 좌표계)
+      const y = paddingTop + graphHeight - ((item.sales - yAxisMin) / yRange) * graphHeight;
+      
+      return {
+        ...item,
+        x,
+        y,
+        salesFormatted: formatCurrency(item.sales),
+      };
+    });
+    
+    // 경로 생성
+    const pathD = points.map((point, index) => 
+      `${index === 0 ? 'M' : 'L'} ${point.x},${point.y}`
+    ).join(' ');
+    
+    // Y축 레이블 생성
+    const yAxisSteps = 5;
+    const yAxisLabels: Array<{ value: number; y: number; formatted: string }> = [];
+    for (let i = 0; i <= yAxisSteps; i++) {
+      const value = yAxisMax - (i / yAxisSteps) * yRange;
+      const y = paddingTop + (i / yAxisSteps) * graphHeight;
+      yAxisLabels.push({ value, y, formatted: formatCurrency(value) });
+    }
+    
+    return {
+      points,
+      pathD,
+      yAxisLabels,
+    };
+  };
+
+  const lineChartData = calculateLineChart(monthlySales);
 
   return (
     <div className="landing-container">
@@ -62,7 +220,7 @@ export default function LandingPage() {
                 </defs>
               </svg>
             </div>
-            <span className="menu-item-text">시공판매/POS 관리</span>
+            <span className="menu-item-text">시공번호/POS 관리</span>
           </div>
           
           <div className="menu-item">
@@ -266,19 +424,17 @@ export default function LandingPage() {
               <h3 className="chart-title">지점별 불량률 Top 5</h3>
               <div className="bar-chart-container">
                 <div className="bar-chart-y-axis">
-                  <span className="bar-chart-y-label">16</span>
-                  <span className="bar-chart-y-label">12</span>
-                  <span className="bar-chart-y-label">8</span>
-                  <span className="bar-chart-y-label">4</span>
-                  <span className="bar-chart-y-label">0</span>
+                  {barChartData.yAxisLabels.map((label, index) => (
+                    <span key={index} className="bar-chart-y-label">{label}</span>
+                  ))}
                 </div>
                 <div className="bar-chart-grid">
-                  {[...Array(5)].map((_, i) => (
+                  {barChartData.yAxisLabels.map((_, i) => (
                     <div key={i} className="bar-chart-grid-line" />
                   ))}
                 </div>
                 <div className="bar-chart-bars">
-                  {branchBars.map((branch, index) => (
+                  {barChartData.bars.map((branch, index) => (
                     <div
                       key={branch.name}
                       className="bar-chart-bar"
@@ -298,7 +454,7 @@ export default function LandingPage() {
                   ))}
                 </div>
                 <div className="bar-chart-labels">
-                  {branchBars.map((branch) => (
+                  {barChartData.bars.map((branch) => (
                     <span
                       key={branch.name}
                       className="bar-chart-label"
@@ -317,59 +473,44 @@ export default function LandingPage() {
                 <div className="pie-chart-svg">
                   <svg width="160" height="160" fill="none" viewBox="0 0 160 160">
                     <g>
-                      {/* 카드 */}
-                      <path
-                        d={svgPaths.pa76c100}
-                        fill="#3B82F6"
-                        onMouseEnter={() => setActivePayment("card")}
-                        onMouseLeave={() => setActivePayment(null)}
-                        style={{ cursor: "pointer" }}
-                      />
-                      {/* 현금 */}
-                      <path
-                        d={svgPaths.p3e5dd6b0}
-                        fill="#22C55E"
-                        onMouseEnter={() => setActivePayment("cash")}
-                        onMouseLeave={() => setActivePayment(null)}
-                        style={{ cursor: "pointer" }}
-                      />
-                      {/* 계좌이체 */}
-                      <path
-                        d={svgPaths.p12f8b680}
-                        fill="#F59E0B"
-                        onMouseEnter={() => setActivePayment("transfer")}
-                        onMouseLeave={() => setActivePayment(null)}
-                        style={{ cursor: "pointer" }}
-                      />
+                      {piePaths.map((item, index) => (
+                        <path
+                          key={item.type}
+                          d={item.path}
+                          fill={item.color}
+                          onMouseEnter={() => setActivePayment(item.type)}
+                          onMouseLeave={() => setActivePayment(null)}
+                          style={{ cursor: "pointer" }}
+                        />
+                      ))}
                     </g>
                   </svg>
                 </div>
 
                 {/* legend 영역 - 상태에 따라 강조 */}
-                <div
-                  className={
-                    "pie-chart-legend blue" +
-                    (activePayment === "card" ? " pie-chart-legend-active" : "")
-                  }
-                >
-                  카드: 65%
-                </div>
-                <div
-                  className={
-                    "pie-chart-legend green" +
-                    (activePayment === "cash" ? " pie-chart-legend-active" : "")
-                  }
-                >
-                  현금: 20%
-                </div>
-                <div
-                  className={
-                    "pie-chart-legend amber" +
-                    (activePayment === "transfer" ? " pie-chart-legend-active" : "")
-                  }
-                >
-                  계좌이체: 15%
-                </div>
+                {piePaths.map((item) => {
+                  const legendClass = 
+                    item.type === "card" ? "blue" :
+                    item.type === "cash" ? "green" : "amber";
+                  
+                  // 컨테이너 중심(50%, 50%)을 기준으로 오프셋 적용
+                  return (
+                    <div
+                      key={item.type}
+                      className={
+                        `pie-chart-legend ${legendClass} pie-chart-legend-${item.labelPosition}` +
+                        (activePayment === item.type ? " pie-chart-legend-active" : "")
+                      }
+                      style={{
+                        left: `calc(50% + ${item.labelOffsetX}px)`,
+                        top: `calc(50% + ${item.labelOffsetY}px)`,
+                        transform: 'translate(-50%, -50%)',
+                      }}
+                    >
+                      {item.name}: {item.percent}%
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -413,13 +554,13 @@ export default function LandingPage() {
                 ))}
                 {/* Line path */}
                 <path
-                  d="M103,125.86 L336,116.86 L569,130.36 L802,94.86 L1035,64.36 L1268,73.36"
+                  d={lineChartData.pathD}
                   stroke="#3B82F6"
                   strokeWidth="2.588"
                   fill="none"
                 />
                 {/* Points + Tooltip */}
-                {linePoints.map((point, i) => (
+                {lineChartData.points.map((point, i) => (
                   <g
                     key={i}
                     onMouseEnter={() => setHoveredMonth(i)}
@@ -460,26 +601,39 @@ export default function LandingPage() {
                           fontSize="14"
                           fontFamily="Inter, Noto Sans KR, sans-serif"
                         >
-                          매출 : {point.sales}
+                          매출 : {point.salesFormatted}
                         </text>
                       </g>
                     )}
                   </g>
                 ))}
                 {/* Y-axis labels */}
-                <text x="15" y="23"  fontSize="14.234" fill="#6a7282" fontFamily="Inter, sans-serif">5,000,000</text>
-                <text x="15" y="67"  fontSize="14.234" fill="#6a7282" fontFamily="Inter, sans-serif">4,000,000</text>
-                <text x="15" y="111" fontSize="14.234" fill="#6a7282" fontFamily="Inter, sans-serif">3,000,000</text>
-                <text x="15" y="155" fontSize="14.234" fill="#6a7282" fontFamily="Inter, sans-serif">2,000,000</text>
-                <text x="15" y="199" fontSize="14.234" fill="#6a7282" fontFamily="Inter, sans-serif">1,000,000</text>
-                <text x="75" y="243" fontSize="14.234" fill="#6a7282" fontFamily="Inter, sans-serif">0</text>
+                {lineChartData.yAxisLabels.map((label, index) => (
+                  <text
+                    key={index}
+                    x="15"
+                    y={label.y + 5}
+                    fontSize="14.234"
+                    fill="#6a7282"
+                    fontFamily="Inter, sans-serif"
+                  >
+                    {label.formatted}
+                  </text>
+                ))}
                 {/* X-axis labels */}
-                <text x="103"  y="284" fontSize="14.234" fill="#6a7282" fontFamily="Inter, Noto Sans KR, sans-serif" textAnchor="middle">7월</text>
-                <text x="336"  y="284" fontSize="14.234" fill="#6a7282" fontFamily="Inter, Noto Sans KR, sans-serif" textAnchor="middle">8월</text>
-                <text x="569"  y="284" fontSize="14.234" fill="#6a7282" fontFamily="Inter, Noto Sans KR, sans-serif" textAnchor="middle">9월</text>
-                <text x="802"  y="284" fontSize="14.234" fill="#6a7282" fontFamily="Inter, Noto Sans KR, sans-serif" textAnchor="middle">10월</text>
-                <text x="1035" y="284" fontSize="14.234" fill="#6a7282" fontFamily="Inter, Noto Sans KR, sans-serif" textAnchor="middle">11월</text>
-                <text x="1268" y="284" fontSize="14.234" fill="#6a7282" fontFamily="Inter, Noto Sans KR, sans-serif" textAnchor="middle">12월</text>
+                {lineChartData.points.map((point, index) => (
+                  <text
+                    key={index}
+                    x={point.x}
+                    y="284"
+                    fontSize="14.234"
+                    fill="#6a7282"
+                    fontFamily="Inter, Noto Sans KR, sans-serif"
+                    textAnchor="middle"
+                  >
+                    {point.month}
+                  </text>
+                ))}
               </svg>
             </div>
             <div className="line-chart-legend">
@@ -491,33 +645,47 @@ export default function LandingPage() {
           <div className="bottom-row">
             {/* Notice Card */}
             <div className="notice-card">
-              <h3 className="chart-title">알림 센터</h3>
+              <div className="notice-card-header">
+                <h3 className="chart-title">누락·비정상 알림</h3>
+                <button className="notice-view-all">
+                  <span>전체보기</span>
+                  <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
+                    <circle cx="8" cy="8" r="6" stroke="#2B7FFF" strokeWidth="1.5" fill="none"/>
+                    <circle cx="8" cy="8" r="2" fill="#2B7FFF"/>
+                  </svg>
+                </button>
+              </div>
               <div className="notice-list">
                 <div className="notice-item red">
                   <h4 className="notice-item-title">POS 미입력</h4>
                   <p className="notice-item-description">강남점 - 시공번호 #2024120201 미입력 (2시간 경과)</p>
                 </div>
                 
-                <div className="notice-item yellow">
-                  <h4 className="notice-item-title">가격 정책 위반</h4>
-                  <p className="notice-item-description">신촌점 - 표준가격 대비 -15% 할인 적용</p>
-                </div>
-                
                 <div className="notice-item red">
                   <h4 className="notice-item-title">불량률 초과</h4>
                   <p className="notice-item-description">부산중앙점 - 이번 달 불량률 12.5% (기준 5%)</p>
                 </div>
-                
-                <div className="notice-item blue">
-                  <h4 className="notice-item-title">시스템 로그</h4>
-                  <p className="notice-item-description">서버 백업 완료 - 2024.12.02 03:00</p>
+
+                <div className="notice-item red">
+                  <h4 className="notice-item-title">POS 미입력</h4>
+                  <p className="notice-item-description">대구점 - 시공번호 #2024120205 미입력 (3시간 경과)</p>
                 </div>
+                
               </div>
             </div>
 
             {/* Star Rating Card */}
             <div className="star-rating-card">
-              <h3 className="chart-title">최근 리뷰 평균 점수</h3>
+              <div className="notice-card-header">
+                <h3 className="chart-title">최근 리뷰 평균 점수</h3>
+                <button className="notice-view-all">
+                  <span>전체보기</span>
+                  <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
+                    <circle cx="8" cy="8" r="6" stroke="#2B7FFF" strokeWidth="1.5" fill="none"/>
+                    <circle cx="8" cy="8" r="2" fill="#2B7FFF"/>
+                  </svg>
+                </button>
+              </div>
               <div className="rating-list">
                 <div className="rating-item">
                   <div className="rating-item-icon">
