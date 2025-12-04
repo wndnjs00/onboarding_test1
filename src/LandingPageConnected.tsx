@@ -68,60 +68,32 @@ export default function LandingPageConnected() {
   async function load() {
     setLoadingData(true);
     try {
-      console.log('📡 Starting Supabase data load...');
-
-      // dashboard_summary: 첫 번째 레코드 가져오기 (single 제거)
-      const { data: summaryData, error: sErr } = await supabase.from('dashboard_summary').select('*').limit(1);
-      if (sErr) {
-        console.error('❌ dashboard_summary error:', sErr);
-      } else {
-        console.log('✅ dashboard_summary loaded:', summaryData?.length, 'records');
-        if (summaryData && summaryData.length > 0) setSummary(summaryData[0]);
-      }
+      const { data: summaryData, error: sErr } = await supabase.from('dashboard_summary').select('*').limit(1).single();
+      if (sErr && sErr.code !== 'PGRST116') console.warn(sErr);
+      if (summaryData) setSummary(summaryData);
 
       const { data: branchData, error: bErr } = await supabase.from('branch_rates').select('*').order('percent', { ascending: false }).limit(5);
-      if (bErr) {
-        console.error('❌ branch_rates error:', bErr);
-      } else {
-        console.log('✅ branch_rates loaded:', branchData?.length, 'records');
-        if (branchData && branchData.length) setBranches(branchData as any[]);
-      }
+      if (bErr && bErr.code !== 'PGRST116') console.warn(bErr);
+      if (branchData && branchData.length) setBranches(branchData as any[]);
 
       const { data: paymentData, error: pErr } = await supabase.from('payment_shares').select('*');
-      if (pErr) {
-        console.error('❌ payment_shares error:', pErr);
-      } else {
-        console.log('✅ payment_shares loaded:', paymentData?.length, 'records');
-        if (paymentData && paymentData.length) setPayments(paymentData as any[]);
-      }
+      if (pErr && pErr.code !== 'PGRST116') console.warn(pErr);
+      if (paymentData && paymentData.length) setPayments(paymentData as any[]);
 
       const { data: monthlyData, error: mErr } = await supabase.from('monthly_sales').select('*').order('month_index', { ascending: true });
-      if (mErr) {
-        console.error('❌ monthly_sales error:', mErr);
-      } else {
-        console.log('✅ monthly_sales loaded:', monthlyData?.length, 'records');
-        if (monthlyData && monthlyData.length) setMonthlySalesState(monthlyData as any[]);
-      }
+      if (mErr && mErr.code !== 'PGRST116') console.warn(mErr);
+      if (monthlyData && monthlyData.length) setMonthlySalesState(monthlyData as any[]);
 
       const { data: noticeData, error: nErr } = await supabase.from('dashboard_notices').select('*').order('created_at', { ascending: false }).limit(10);
-      if (nErr) {
-        console.error('❌ dashboard_notices error:', nErr);
-      } else {
-        console.log('✅ dashboard_notices loaded:', noticeData?.length, 'records');
-        if (noticeData && noticeData.length) setNotices(noticeData as any[]);
-      }
+      if (nErr && nErr.code !== 'PGRST116') console.warn(nErr);
+      if (noticeData && noticeData.length) setNotices(noticeData as any[]);
 
       const { data: ratingData, error: rErr } = await supabase.from('branch_ratings').select('*').order('rating', { ascending: false }).limit(10);
-      if (rErr) {
-        console.error('❌ branch_ratings error:', rErr);
-      } else {
-        console.log('✅ branch_ratings loaded:', ratingData?.length, 'records');
-        if (ratingData && ratingData.length) setRatings(ratingData as any[]);
-      }
+      if (rErr && rErr.code !== 'PGRST116') console.warn(rErr);
+      if (ratingData && ratingData.length) setRatings(ratingData as any[]);
 
-      console.log('📡 Supabase data load complete!');
     } catch (err: any) {
-      console.error('❌ Critical error loading data:', err);
+      console.error(err);
       setDataError(err.message || String(err));
     } finally {
       setLoadingData(false);

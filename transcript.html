@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Conversation Transcript — Onboarding Project</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; line-height:1.5; padding:24px; color:#101010 }
+    pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto }
+    h1,h2 { color:#0b57d0 }
+    table { border-collapse: collapse }
+    .meta { color:#555; margin-bottom:12px }
+  </style>
+</head>
+<body>
+  <h1>Onboarding Project — Conversation Transcript</h1>
+  <div class="meta">Date: 2025-12-03</div>
+
+  <h2>Summary</h2>
+  <p>This document contains a concise transcript and summary of the conversation while integrating Supabase into the React + Vite onboarding project and debugging realtime updates.</p>
+
+  <h2>Key topics</h2>
+  <ul>
+    <li>Running project with Vite</li>
+    <li>Designing Supabase tables and environment setup</li>
+    <li>Adding <code>src/lib/supabaseClient.ts</code> and <code>LandingPageConnected.tsx</code></li>
+    <li>Fixing <code>.env.local</code> spacing issue</li>
+    <li>Fixing <code>.single()</code> causing 406 error</li>
+    <li>Enabling RLS/public read policies and publications for Realtime</li>
+    <li>Debugging realtime subscriptions (payload logs and subscription status)</li>
+  </ul>
+
+  <h2>Chronological Highlights</h2>
+  <ol>
+    <li>Initial run instructions: use <code>npm run dev</code>.</li>
+    <li>Supabase integration: created tables, env, client, and installed dependency.</li>
+    <li>LandingPageConnected implementation & corruption recovery.</li>
+    <li>Debugging: fixed .env spacing, removed .single().</li>
+    <li>RLS and publications: added policies and publications to enable realtime reads.</li>
+    <li>Realtime payload debugging and subscription verification.</li>
+  </ol>
+
+  <h2>Selected Console Logs</h2>
+  <pre>Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+
+LandingPageConnected.tsx:71 📡 Starting Supabase data load...
+LandingPageConnected.tsx:135 🔌 Setting up Realtime subscriptions...
+LandingPageConnected.tsx:78 ✅ dashboard_summary loaded: 1 records
+LandingPageConnected.tsx:86 ✅ branch_rates loaded: 5 records
+LandingPageConnected.tsx:94 ✅ payment_shares loaded: 3 records
+LandingPageConnected.tsx:102 ✅ monthly_sales loaded: 6 records
+LandingPageConnected.tsx:110 ✅ dashboard_notices loaded: 3 records
+LandingPageConnected.tsx:118 ✅ branch_ratings loaded: 5 records
+LandingPageConnected.tsx:122 📡 Supabase data load complete!
+LandingPageConnected.tsx:144 📡 branch_rates subscription status: SUBSCRIBED
+LandingPageConnected.tsx:154 📡 payment_shares subscription status: SUBSCRIBED
+LandingPageConnected.tsx:164 📡 monthly_sales subscription status: SUBSCRIBED
+LandingPageConnected.tsx:174 📡 dashboard_summary subscription status: SUBSCRIBED
+LandingPageConnected.tsx:184 📡 dashboard_notices subscription status: SUBSCRIBED
+LandingPageConnected.tsx:194 📡 branch_ratings subscription status: SUBSCRIBED
+</pre>
+
+  <h2>How to export to PDF</h2>
+  <h3>Option A (quick, recommended)</h3>
+  <ol>
+    <li>Open <code>transcript.html</code> in your browser.</li>
+    <li>File → Print (or Ctrl+P) → choose <strong>Save as PDF</strong>.</li>
+  </ol>
+
+  <h3>Option B (pandoc)</h3>
+  <pre>pandoc transcript.md -o transcript.pdf</pre>
+
+  <h3>Option C (Node/Puppeteer)</h3>
+  <p>Write a small Node script using Puppeteer to open <code>transcript.html</code> and print to PDF.</p>
+
+  <h2>Files created</h2>
+  <ul>
+    <li><code>transcript.md</code> — Markdown transcript saved to project root</li>
+    <li><code>transcript.html</code> — HTML wrapper for easier printing</li>
+  </ul>
+
+  <p>End of transcript.</p>
+</body>
+</html>
